@@ -1,0 +1,56 @@
+﻿@page "/sensors"
+@using Core.Interfaces
+@using Core.Models
+@using BlazorApp.Components.Shared
+@inject IHomeAssistantService HaService
+
+@rendermode InteractiveServer
+
+<PageTitle>Sensors</PageTitle>
+
+<h1>Sensors</h1>
+
+<div class="filter-bar">
+    <input @bind="searchTerm"
+           @bind:event="oninput"
+           placeholder="Search entities..."
+           class="form-control" />
+</div>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (FilteredStates.Any())
+{
+    <DataTable Items="FilteredStates" Columns="tableColumns" PageSize="25" SortColumn="LastUpdated" SortAscending="false" />
+}
+else
+{
+    <p>No results for "<strong>@searchTerm</strong>".</p>
+}
+
+@code {
+    private IEnumerable<HaState> allStates = [];
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private List<DataTableColumn<HaState>> tableColumns = [];
+
+    private IEnumerable<HaState> FilteredStates => allStates
+        .Where(s => string.IsNullOrWhiteSpace(searchTerm)
+                    || s.EntityId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        tableColumns =
+        [
+            new DataTableColumn<HaState>("Entity ID", "EntityId"),
+            new DataTableColumn<HaState>("State", "State"),
+            new DataTableColumn<HaState>("Last Updated", "LastUpdated", 
+                item => @<text>@item.LastUpdated.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")</text>)
+        ];
+
+        allStates = await HaService.GetAllStatesAsync();
+        isLoading = false;
+    }
+}

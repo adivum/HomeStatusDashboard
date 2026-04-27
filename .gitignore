@@ -6,25 +6,35 @@ obj/
 .vs/
 .vscode/
 *.sln.iml
+*.sln.docstates
 
 # User-specific files
 *.suo
 *.user
 *.userosscache
-*.sln.docstates
 
 # Rider
 .idea/
-*.sln.iml
 
 # Local environment files
 appsettings.local.json
+appsettings.Development.json
 .env
 .env.local
 
 # Dependencies
 .nuget/
+node_modules/
+
+# Build artifacts
+dist/
+*.log
 
 # OS files
 .DS_Store
 Thumbs.db
+
+# Editor/IDE temp files
+*.swp
+*.swo
+*~

@@ -1,0 +1,146 @@
+@using System.Reflection
+@typeparam TItem
+
+<div class="data-table-container">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                @foreach (var column in Columns)
+                {
+                    <th @onclick="() => SortBy(column.PropertyName)" 
+                        style="cursor: pointer; user-select: none;"
+                        title="Click to sort">
+                        @column.Title
+                        @if (SortColumn == column.PropertyName)
+                        {
+                            <span>@(SortAscending ? "▲" : "▼")</span>
+                        }
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in PaginatedItems)
+            {
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <td>
+                            @if (column.Template != null)
+                            {
+                                @column.Template(item)
+                            }
+                            else
+                            {
+                                @GetPropertyValue(item, column.PropertyName)?.ToString()
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (TotalPages > 1)
+    {
+        <nav aria-label="Page navigation" class="mt-3">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => CurrentPage = 1">First</button>
+                </li>
+                <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => CurrentPage--">Previous</button>
+                </li>
+
+                @for (int i = Math.Max(1, CurrentPage - 2); i <= Math.Min(TotalPages, CurrentPage + 2); i++)
+                {
+                    var pageNum = i;
+                    <li class="page-item @(CurrentPage == pageNum ? "active" : "")">
+                        <button class="page-link" @onclick="() => CurrentPage = pageNum">@pageNum</button>
+                    </li>
+                }
+
+                <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => CurrentPage++">Next</button>
+                </li>
+                <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                    <button class="page-link" @onclick="() => CurrentPage = TotalPages">Last</button>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="text-center text-muted small mt-2">
+            Page @CurrentPage of @TotalPages (total @Items.Count() items)
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; } = [];
+
+    [Parameter]
+    public List<DataTableColumn<TItem>> Columns { get; set; } = [];
+
+    [Parameter]
+    public int PageSize { get; set; } = 25;
+
+    [Parameter]
+    public string SortColumn { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool SortAscending { get; set; } = true;
+
+    private int CurrentPage = 1;
+
+    private IEnumerable<TItem> SortedItems
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(SortColumn))
+                return Items;
+
+            var property = typeof(TItem).GetProperty(SortColumn, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+            if (property == null)
+                return Items;
+
+            var sorted = Items.AsEnumerable();
+            sorted = SortAscending
+                ? sorted.OrderBy(x => property.GetValue(x))
+                : sorted.OrderByDescending(x => property.GetValue(x));
+
+            return sorted;
+        }
+    }
+
+    private int TotalPages => (int)Math.Ceiling((double)Items.Count() / PageSize);
+
+    private IEnumerable<TItem> PaginatedItems
+    {
+        get
+        {
+            var skip = (CurrentPage - 1) * PageSize;
+            return SortedItems.Skip(skip).Take(PageSize);
+        }
+    }
+
+    private void SortBy(string propertyName)
+    {
+        if (SortColumn == propertyName)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = propertyName;
+            SortAscending = true;
+        }
+        CurrentPage = 1;
+    }
+
+    private object? GetPropertyValue(TItem item, string propertyName)
+    {
+        var property = typeof(TItem).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        return property?.GetValue(item);
+    }
+}
