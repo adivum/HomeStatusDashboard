@@ -3,18 +3,22 @@
 @using Core.Models
 @using BlazorApp.Components.Shared
 @inject IHomeAssistantService HaService
+@inject NavigationManager Navigation
 
 @rendermode InteractiveServer
 
 <PageTitle>Sensors</PageTitle>
 
-<h1>Sensors</h1>
+<h1 class="mb-4">Sensors</h1>
 
-<div class="filter-bar">
-    <input @bind="searchTerm"
-           @bind:event="oninput"
-           placeholder="Search entities..."
-           class="form-control" />
+<div class="mb-4">
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input @bind="searchTerm"
+               @bind:event="oninput"
+               placeholder="Search entities..."
+               class="form-control" />
+    </div>
 </div>
 
 @if (isLoading)
@@ -23,7 +27,7 @@
 }
 else if (FilteredStates.Any())
 {
-    <DataTable Items="FilteredStates" Columns="tableColumns" PageSize="25" SortColumn="LastUpdated" SortAscending="false" />
+    <DataTable Items="FilteredStates" Columns="tableColumns" PageSize="25" SortColumn="LastUpdated" SortAscending="false" OnRowClicked="@((HaState sensor) => HandleRowClickAsync(sensor))" />
 }
 else
 {
@@ -52,5 +56,16 @@ else
 
         allStates = await HaService.GetAllStatesAsync();
         isLoading = false;
+    }
+
+    private void HandleRowClick(HaState sensor)
+    {
+        Navigation.NavigateTo($"/sensor/{Uri.EscapeDataString(sensor.EntityId)}");
+    }
+
+    private Task HandleRowClickAsync(HaState sensor)
+    {
+        HandleRowClick(sensor);
+        return Task.CompletedTask;
     }
 }

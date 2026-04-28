@@ -1,0 +1,143 @@
+@page "/sensor/{EntityId}"
+@using Core.Interfaces
+@using Core.Models
+@inject IHomeAssistantService HaService
+@inject NavigationManager Navigation
+
+@rendermode InteractiveServer
+
+<PageTitle>@(sensor?.EntityId ?? "Sensor Details")</PageTitle>
+
+<div class="container mt-4 mb-5">
+    <a href="javascript:void(0)" class="btn btn-outline-secondary mb-4" @onclick="GoBack">
+        <i class="bi bi-arrow-left"></i> Back to Sensors
+    </a>
+
+    @if (isLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (sensor != null)
+    {
+        <div class="card shadow-lg">
+            <div class="card-header bg-primary text-white py-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="mb-0">@sensor.EntityId</h2>
+                    </div>
+                    <div>
+                        <span class="badge bg-light text-primary fs-6 px-3 py-2">@sensor.State</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Key Information -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-light bg-light h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted text-uppercase fw-bold small">Last Updated</h6>
+                                <p class="card-text fs-5 mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    @sensor.LastUpdated.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-light bg-light h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted text-uppercase fw-bold small">Last Changed</h6>
+                                <p class="card-text fs-5 mb-0">
+                                    <i class="bi bi-clock-history me-2"></i>
+                                    @sensor.LastChanged.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (sensor.Attributes.Any())
+                {
+                    <hr class="my-4" />
+                    <h5 class="mb-3 fw-bold">
+                        <i class="bi bi-sliders me-2 text-primary"></i>
+                        Attributes
+                    </h5>
+                    <div class="row g-3">
+                        @foreach (var attr in sensor.Attributes)
+                        {
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <div class="card border-primary border-start border-3 h-100 bg-white">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary fw-bold small text-uppercase">@attr.Key</h6>
+                                        <p class="card-text text-muted mb-0 font-monospace">@GetAttributeValue(attr.Value)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <strong>Not Found</strong><br />
+            Sensor entity "<strong>@EntityId</strong>" could not be found.
+        </div>
+    }
+</div>
+
+<style>
+    .font-monospace {
+        font-family: 'Monaco', 'Courier New', monospace;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string? EntityId { get; set; }
+
+    private HaState? sensor;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(EntityId))
+        {
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            var allStates = await HaService.GetAllStatesAsync();
+            sensor = allStates.FirstOrDefault(s => s.EntityId == Uri.UnescapeDataString(EntityId));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading sensor: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string GetAttributeValue(object? value)
+    {
+        return value?.ToString() ?? "N/A";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/sensors");
+    }
+}
