@@ -16,7 +16,7 @@ var service = host.Services.GetRequiredService<IHomeAssistantService>();
 try
 {
     Console.WriteLine("Fetching all Home Assistant states...\n");
-    var states = await service.GetAllStatesAsync();
+    var states = await service.GetEntitiesListViewsAsync();
     
     var statesList = states.OrderByDescending(e => e.LastChanged).ToList();
     Console.WriteLine($"Total entities: {statesList.Count}\n");
