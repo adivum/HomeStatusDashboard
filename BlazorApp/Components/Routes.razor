@@ -3,4 +3,13 @@
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div class="alert alert-warning" role="alert">
+                <h4 class="alert-heading">Page not found</h4>
+                <p>Sorry, the page you're looking for doesn't exist. <a href="dashboard" class="alert-link">Go to Dashboard</a></p>
+            </div>
+        </LayoutView>
+    </NotFound>
 </Router>
