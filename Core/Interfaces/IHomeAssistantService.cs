@@ -1,10 +1,11 @@
-using Core.Models;
+using Core.Models.EntityViews;
 
 namespace Core.Interfaces
 {
     public interface IHomeAssistantService
     {
-        Task<IEnumerable<HaState>> GetAllStatesAsync(CancellationToken ct = default);
-        Task<HaState?> GetEntityAsync(string entityId, CancellationToken ct = default);
+        Task<IEnumerable<IEntityView>> GetDashboardViewsAsync(CancellationToken ct = default);
+        Task<IEnumerable<IEntityView>> GetEntitiesListViewsAsync(CancellationToken ct = default);
+        Task<IEntityView?> GetEntityViewAsync(string entityId, CancellationToken ct = default);
     }
 }

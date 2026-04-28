@@ -31,6 +31,8 @@ namespace Core
             }
             
             services.Configure<HomeAssistantOptions>(configuration.GetSection(HomeAssistantOptions.SectionName));
+            services.AddScoped<IEntityTypeDetector, EntityTypeDetector>();
+            services.AddScoped<IEntityViewFactory, EntityViewFactory>();
             services.AddHttpClient<IHomeAssistantService, HomeAssistantService>();
             
             return services;
