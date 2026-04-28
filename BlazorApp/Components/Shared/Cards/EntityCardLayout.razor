@@ -1,0 +1,39 @@
+@using Core.Models.EntityViews
+@using BlazorApp.Components.Shared
+
+<div class="card h-100 @($"border-start border-3 border-{BorderColor}")">
+    <div class="card-body">
+        <h6 class="card-title text-truncate">@View.FriendlyName</h6>
+        
+        @if (Content != null)
+        {
+            @Content
+        }
+
+        @if (ExtraContent != null)
+        {
+            @ExtraContent
+        }
+
+        <DebugAttributes Entity="View" />
+
+        <div class="small text-muted mt-3">
+            <div>Last updated: @View.LastUpdated.ToString("HH:mm:ss")</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEntityView View { get; set; } = null!;
+
+    [Parameter]
+    public string BorderColor { get; set; } = "secondary";
+
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    [Parameter]
+    public RenderFragment? ExtraContent { get; set; }
+}
+

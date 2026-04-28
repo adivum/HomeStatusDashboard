@@ -1,0 +1,11 @@
+@using Core.Models.EntityViews
+
+<BinaryCardBase View="View"
+                OnColor="success"
+                OnIcon="bi-toggle2-on"
+                OffIcon="bi-toggle2-off" />
+
+@code {
+    [Parameter]
+    public SwitchEntityView View { get; set; } = null!;
+}

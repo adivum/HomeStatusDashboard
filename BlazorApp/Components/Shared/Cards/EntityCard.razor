@@ -1,0 +1,43 @@
+@using Core.Models
+@using Core.Models.EntityViews
+@using BlazorApp.Components.Shared.Cards
+
+@if (View != null)
+{
+    @switch (View)
+    {
+        case NumericEntityView numView when numView.Type == EntityType.Temperature:
+            <TemperatureSensor View="numView" />
+            break;
+        case NumericEntityView numView when numView.Type == EntityType.Humidity:
+            <HumiditySensor View="numView" />
+            break;
+        case NumericEntityView numView when numView.Type == EntityType.Pressure:
+            <PressureSensor View="numView" />
+            break;
+        case TimestampEntityView tsView:
+            <TimestampSensor View="tsView" />
+            break;
+        case BinaryEntityView binView when binView.Type == EntityType.BinarySensor:
+            <BinarySensorCard View="binView" />
+            break;
+        case LightEntityView lightView:
+            <LightCard View="lightView" />
+            break;
+        case SwitchEntityView switchView:
+            <SwitchCard View="switchView" />
+            break;
+        case NumericEntityView numView when numView.Type == EntityType.NumericSensor:
+            <NumericSensor View="numView" />
+            break;
+        default:
+            <GenericEntityCard View="View" />
+            break;
+    }
+}
+
+@code {
+    [Parameter]
+    public IEntityView? View { get; set; }
+}
+

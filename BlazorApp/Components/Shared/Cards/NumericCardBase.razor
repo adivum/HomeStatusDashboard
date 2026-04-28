@@ -1,0 +1,30 @@
+@using Core.Models.EntityViews
+
+<EntityCardLayout View="View" BorderColor="@TextColor">
+    <Content>
+        <div class="d-flex align-items-center gap-2 my-3">
+            <span class="fs-3 fw-bold text-@TextColor">@View.Value.ToString("F2")</span>
+            @if (!string.IsNullOrEmpty(View.Unit))
+            {
+                <span class="fs-6 text-@TextColor">@View.Unit</span>
+            }
+        </div>
+    </Content>
+    <ExtraContent>
+        @if (ExtraContent != null)
+        {
+            @ExtraContent
+        }
+    </ExtraContent>
+</EntityCardLayout>
+
+@code {
+    [Parameter]
+    public NumericEntityView View { get; set; } = null!;
+
+    [Parameter]
+    public string TextColor { get; set; } = "secondary";
+
+    [Parameter]
+    public RenderFragment? ExtraContent { get; set; }
+}

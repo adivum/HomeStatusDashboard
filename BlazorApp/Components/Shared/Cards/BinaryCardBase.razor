@@ -1,0 +1,61 @@
+@using Core.Models.EntityViews
+
+<EntityCardLayout View="View" BorderColor="@GetBorderColor()">
+    <Content>
+        <div class="d-flex align-items-center gap-2 my-3">
+            @if (!string.IsNullOrEmpty(IconClass))
+            {
+                <i class="bi @IconClass fs-3 text-@GetStateColor()"></i>
+            }
+            <span class="fw-bold text-@GetStateColor()">@StateLabel</span>
+        </div>
+    </Content>
+    <ExtraContent>
+        @if (ExtraContent != null)
+        {
+            @ExtraContent
+        }
+    </ExtraContent>
+</EntityCardLayout>
+
+@code {
+    [Parameter]
+    public BinaryEntityView View { get; set; } = null!;
+
+    [Parameter]
+    public string OnColor { get; set; } = "success";
+
+    [Parameter]
+    public string OffColor { get; set; } = "secondary";
+
+    [Parameter]
+    public string? OnIcon { get; set; }
+
+    [Parameter]
+    public string? OffIcon { get; set; }
+
+    [Parameter]
+    public RenderFragment? ExtraContent { get; set; }
+
+    protected string StateLabel => View.IsOn ? "ON" : "OFF";
+
+    protected string GetStateColor() => View.IsOn ? OnColor : OffColor;
+
+    protected string GetBorderColor()
+    {
+        var color = GetStateColor();
+        return color.Replace("text-", "");
+    }
+
+    protected string IconClass
+    {
+        get
+        {
+            if (View.IsOn && !string.IsNullOrEmpty(OnIcon))
+                return OnIcon;
+            if (!View.IsOn && !string.IsNullOrEmpty(OffIcon))
+                return OffIcon;
+            return string.Empty;
+        }
+    }
+}

@@ -1,0 +1,20 @@
+@using Core.Models.EntityViews
+
+<BinaryCardBase View="View" 
+                OnColor="warning" 
+                OnIcon="bi-brightness-high-fill"
+                OffIcon="bi-lamp">
+    <ExtraContent>
+        @if (View.IsOn && View.Brightness.HasValue)
+        {
+            <div class="mt-2">
+                <small class="text-muted">Brightness: @View.Brightness%</small>
+            </div>
+        }
+    </ExtraContent>
+</BinaryCardBase>
+
+@code {
+    [Parameter]
+    public LightEntityView View { get; set; } = null!;
+}}

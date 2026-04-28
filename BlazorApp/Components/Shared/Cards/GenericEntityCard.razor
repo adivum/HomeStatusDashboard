@@ -1,0 +1,19 @@
+@using Core.Models.EntityViews
+
+@if (View is NumericEntityView numeric)
+{
+    <NumericCardBase View="numeric" TextColor="secondary" />
+}
+else if (View is BinaryEntityView binary)
+{
+    <BinaryCardBase View="binary" />
+}
+else
+{
+    <EntityCardLayout View="View" />
+}
+
+@code {
+    [Parameter]
+    public IEntityView View { get; set; } = null!;
+}

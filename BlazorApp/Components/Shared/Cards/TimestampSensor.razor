@@ -1,0 +1,23 @@
+@using Core.Models.EntityViews
+
+<EntityCardLayout View="View" BorderColor="primary">
+    <Content>
+        <div class="d-flex align-items-center gap-2 my-3">
+            <span class="fs-3 fw-bold text-primary">
+                @if (View.Timestamp.HasValue)
+                {
+                    @View.Timestamp.Value.ToString("dd-MM-yyyy HH:mm")
+                }
+                else
+                {
+                    <em>No timestamp</em>
+                }
+            </span>
+        </div>
+    </Content>
+</EntityCardLayout>
+
+@code {
+    [Parameter]
+    public TimestampEntityView View { get; set; } = null!;
+}

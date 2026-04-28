@@ -1,0 +1,11 @@
+@using Core.Models.EntityViews
+
+<BinaryCardBase View="View" 
+                OnColor="success" 
+                OnIcon="bi-check-circle-fill"
+                OffIcon="bi-x-circle-fill" />
+
+@code {
+    [Parameter]
+    public BinaryEntityView View { get; set; } = null!;
+}

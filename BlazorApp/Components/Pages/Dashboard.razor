@@ -1,7 +1,64 @@
 ﻿@page "/dashboard"
+@using Core.Interfaces
+@using Core.Models.EntityViews
+@inject IHomeAssistantService HomeAssistantService
 
-<PageTitle>Dasboard</PageTitle>
+@rendermode InteractiveServer
 
-<h1>Dashboard with sensors</h1>
+<PageTitle>Dashboard</PageTitle>
+
+<div class="p-4">
+    <h1 class="mb-4">Home Status Dashboard</h1>
+
+    @if (IsLoading)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading entities...</p>
+        </div>
+    }
+    else if (Entities?.Count == 0)
+    {
+        <div class="alert alert-info" role="alert">
+            No entities found. Check your Home Assistant connection.
+        </div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var entity in Entities!)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <EntityCard View="entity" />
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<IEntityView>? Entities;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var views = await HomeAssistantService.GetDashboardViewsAsync();
+            Entities = views.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading entities: {ex.Message}");
+            Entities = new();
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+}
 
 

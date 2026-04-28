@@ -1,0 +1,87 @@
+@using Core.Models.EntityViews
+
+<!-- TEST: Verify component is rendering -->
+<div style="display: none;">Component loaded for @Entity?.EntityId</div>
+
+@if (Entity != null)
+{
+    <div class="mt-2 border-top pt-2">
+        <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" 
+                data-bs-target="#debug-@EntityId" aria-expanded="false" aria-controls="debug-@EntityId">
+            <small>More Info (@Entity.Attributes?.Count attributes)</small>
+        </button>
+        <div class="collapse mt-2" id="debug-@EntityId">
+            <div class="bg-light p-2 rounded" style="font-size: 0.75rem; max-height: 300px; overflow-y: auto;">
+                <div class="mb-2">
+                    <strong>Entity ID:</strong><br />
+                    <code>@Entity.EntityId</code>
+                </div>
+                <div class="mb-2">
+                    <strong>State:</strong><br />
+                    <code>@Entity.State</code>
+                </div>
+                
+                @if (Entity.Attributes != null && Entity.Attributes.Count > 0)
+                {
+                    <div class="mb-2">
+                        <strong>Attributes (@Entity.Attributes.Count):</strong>
+                        <div style="margin-left: 1rem; margin-top: 0.5rem;">
+                            @foreach (var attr in Entity.Attributes.OrderBy(x => x.Key))
+                            {
+                                <div class="text-break mb-1">
+                                    <code style="color: #d63384;">@attr.Key</code>: 
+                                    @if (attr.Value == null)
+                                    {
+                                        <span class="text-muted">null</span>
+                                    }
+                                    else if (attr.Value is string strVal)
+                                    {
+                                        <code>@strVal</code>
+                                    }
+                                    else if (attr.Value is bool boolVal)
+                                    {
+                                        <code>@boolVal</code>
+                                    }
+                                    else if (attr.Value is int intVal)
+                                    {
+                                        <code>@intVal</code>
+                                    }
+                                    else if (attr.Value is double dblVal)
+                                    {
+                                        <code>@dblVal</code>
+                                    }
+                                    else if (attr.Value is System.Collections.IEnumerable enumVal && !(attr.Value is string))
+                                    {
+                                        <code>[complex array]</code>
+                                    }
+                                    else
+                                    {
+                                        <code>@attr.Value?.ToString()</code>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning alert-sm py-1 px-2 mb-2">
+                        <small>No attributes found</small>
+                    </div>
+                }
+
+                <div class="mb-0">
+                    <strong>Last Updated:</strong><br />
+                    <code>@Entity.LastUpdated.ToString("g")</code>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public IEntityView? Entity { get; set; }
+
+    private string EntityId => Entity?.EntityId?.Replace(".", "-") ?? "unknown";
+}

@@ -2,6 +2,8 @@
 @using Core.Interfaces
 @using Core.Models
 @using BlazorApp.Components.Shared
+@using Core.Models.EntityViews
+@using Core.Services
 @inject IHomeAssistantService HaService
 @inject NavigationManager Navigation
 
@@ -27,7 +29,7 @@
 }
 else if (FilteredStates.Any())
 {
-    <DataTable Items="FilteredStates" Columns="tableColumns" PageSize="25" SortColumn="LastUpdated" SortAscending="false" OnRowClicked="@((HaState sensor) => HandleRowClickAsync(sensor))" />
+    <DataTable Items="FilteredStates" Columns="tableColumns" PageSize="25" SortColumn="LastUpdated" SortAscending="false" OnRowClicked="@((IEntityView sensor) => HandleRowClickAsync(sensor))" />
 }
 else
 {
@@ -35,12 +37,12 @@ else
 }
 
 @code {
-    private IEnumerable<HaState> allStates = [];
+    private IEnumerable<IEntityView> allStates = [];
     private string searchTerm = string.Empty;
     private bool isLoading = true;
-    private List<DataTableColumn<HaState>> tableColumns = [];
+    private List<DataTableColumn<IEntityView>> tableColumns = [];
 
-    private IEnumerable<HaState> FilteredStates => allStates
+    private IEnumerable<IEntityView> FilteredStates => allStates
         .Where(s => string.IsNullOrWhiteSpace(searchTerm)
                     || s.EntityId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
 
@@ -48,22 +50,33 @@ else
     {
         tableColumns =
         [
-            new DataTableColumn<HaState>("Entity ID", "EntityId"),
-            new DataTableColumn<HaState>("State", "State"),
-            new DataTableColumn<HaState>("Last Updated", "LastUpdated", 
+            new DataTableColumn<IEntityView>("Entity ID", "EntityId"),
+            new DataTableColumn<IEntityView>("State", "State"),
+            new DataTableColumn<IEntityView>("Last Updated", "LastUpdated", 
                 item => @<text>@item.LastUpdated.ToLocalTime().ToString("dd-MM-yyyy HH:mm:ss")</text>)
         ];
-
-        allStates = await HaService.GetAllStatesAsync();
-        isLoading = false;
+        
+        try{
+            var views = await HaService.GetEntitiesListViewsAsync();
+            allStates = views.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading entities: {ex.Message}");
+            allStates = [];
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-    private void HandleRowClick(HaState sensor)
+    private void HandleRowClick(IEntityView sensor)
     {
         Navigation.NavigateTo($"/sensor/{Uri.EscapeDataString(sensor.EntityId)}");
     }
 
-    private Task HandleRowClickAsync(HaState sensor)
+    private Task HandleRowClickAsync(IEntityView sensor)
     {
         HandleRowClick(sensor);
         return Task.CompletedTask;
