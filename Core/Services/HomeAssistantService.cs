@@ -1,10 +1,12 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Core.Constants;
 using Core.Interfaces;
 using Core.Models;
 using Core.Models.EntityViews;
 using Core.Options;
+using Core.Utilities;
 using Microsoft.Extensions.Options;
 
 namespace Core.Services
@@ -56,6 +58,25 @@ namespace Core.Services
         {
             var state = await GetEntityAsync(entityId, ct);
             return state != null ? _factory.CreateView(state) : null;
+        }
+
+        public async Task TurnOnAsync(string entityId, CancellationToken ct = default)
+        {
+            await CallServiceAsync(ServiceDomain.Switch, ServiceAction.TurnOn, entityId, ct);
+        }
+
+        public async Task TurnOffAsync(string entityId, CancellationToken ct = default)
+        {
+            await CallServiceAsync(ServiceDomain.Switch, ServiceAction.TurnOff, entityId, ct);
+        }
+
+        private async Task CallServiceAsync(ServiceDomain domain, ServiceAction action, string entityId, CancellationToken ct = default)
+        {
+            var request = new ServiceRequest { EntityId = entityId };
+            var endpoint = $"api/services/{domain.ToServicePath(action)}";
+            
+            using var response = await _http.PostAsJsonAsync(endpoint, request, JsonOptions, ct);
+            response.EnsureSuccessStatusCode();
         }
     }
 }

@@ -1,11 +1,76 @@
 @using Core.Models.EntityViews
+@using Core.Interfaces
+@inject IHomeAssistantService HomeAssistantService
 
 <BinaryCardBase View="View"
                 OnColor="success"
                 OnIcon="bi-toggle2-on"
-                OffIcon="bi-toggle2-off" />
+                OffIcon="bi-toggle2-off">
+    <ExtraContent>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-sm btn-outline-success flex-grow-1"
+                    @onclick="@(async () => await TurnOnAsync())"
+                    disabled="@(View.IsOn || IsLoading)">
+                <i class="bi bi-power"></i> On
+            </button>
+            <button class="btn btn-sm btn-outline-danger flex-grow-1"
+                    @onclick="@(async () => await TurnOffAsync())"
+                    disabled="@(!View.IsOn || IsLoading)">
+                <i class="bi bi-power"></i> Off
+            </button>
+        </div>
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-danger alert-sm mt-2 mb-0" role="alert">
+                <small>@ErrorMessage</small>
+            </div>
+        }
+    </ExtraContent>
+</BinaryCardBase>
 
 @code {
     [Parameter]
     public SwitchEntityView View { get; set; } = null!;
+
+    private bool IsLoading = false;
+    private string? ErrorMessage;
+
+    private async Task TurnOnAsync()
+    {
+        await ToggleSwitchAsync(true);
+    }
+
+    private async Task TurnOffAsync()
+    {
+        await ToggleSwitchAsync(false);
+    }
+
+    private async Task ToggleSwitchAsync(bool turnOn)
+    {
+        IsLoading = true;
+        ErrorMessage = null;
+
+        try
+        {
+            if (turnOn)
+            {
+                await HomeAssistantService.TurnOnAsync(View.EntityId);
+                View.IsOn = true;
+            }
+            else
+            {
+                await HomeAssistantService.TurnOffAsync(View.EntityId);
+                View.IsOn = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+            Console.WriteLine($"Switch control error: {ex}");
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
 }
